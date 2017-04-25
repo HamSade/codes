@@ -1,0 +1,2 @@
+model_checkpoint_path: "/home/hsadeghi/Dropbox/research codes/full_2step_4bit_AE.ckpt"
+all_model_checkpoint_paths: "/home/hsadeghi/Dropbox/research codes/full_2step_4bit_AE.ckpt"
