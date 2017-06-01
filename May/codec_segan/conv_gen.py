@@ -9,7 +9,7 @@ import tensorflow as tf
 import numpy as np
 
 from ops_codec import downconv, prelu, leakyrelu, nn_deconv
-from ops_codec import batch_norm, full_layer, w_b_gen
+#from ops_codec import batch_norm, full_layer, w_b_gen
 
 from binary_quantizer import binary_quantizer
 
@@ -27,6 +27,7 @@ def auto_encoder(x, mode):
     x_ = decoder(h_q)  
     return x_
 
+
 #%%
 #def discriminator(x):
 #    
@@ -40,10 +41,14 @@ def auto_encoder(x, mode):
 
 #    return o
 
-
 #%% Assuming x is batch_size x input_dim
-def encoder(x, activation='prelu'):     
-    num_filters = int(np.log2(comp_ratio))         
+weights={}
+
+
+def encoder(x, activation='prelu'): 
+    
+    num_filters = int(np.log2(comp_ratio))
+         
     h = x;     
     for i in range(num_filters):
         print('enc_layer_number = ', i)
@@ -75,13 +80,13 @@ def decoder(x, activation='leakyrelu'):
 
 
 #%% checking generator
-x= tf.random_normal([2, 2**14])
-y= generator(x,1.)
-init = tf.global_variables_initializer()
-sess=tf.Session()
-sess.run(init)
-#print(sess.run(y))
-print(sess.run(tf.shape(y)))
+#x= tf.random_normal([2, 2**14])
+#y= auto_encoder(x,1.)
+#init = tf.global_variables_initializer()
+#sess=tf.Session()
+#sess.run(init)
+##print(sess.run(y))
+#print(sess.run(tf.shape(y)))
 
 #%% checking encoder/decoder
 #x= np.random.normal(size=[2, 2**11]).astype(np.float32)

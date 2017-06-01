@@ -13,8 +13,7 @@ import time
 
 
 #%%
-#path_name = '/vol/grid-solar/sgeusers/hsadeghi/data/mat_clean_16k'
-path_name = '/vol/grid-solar/sgeusers/hsadeghi/data/'
+#path_name = '/vol/grid-solar/sgeusers/hsadeghi/data/'
 path_name = '/vol/grid-solar/sgeusers/hsadeghi/segan_data/mat_clean_16k/'
 
 
@@ -52,27 +51,17 @@ def data_parser(data, input_dim, batch_size, preemph=0.0, overlap=False):
                                  [batch_size, input_dim])
         
         
-    parsed_data = pre_emph(parsed_data, preemph)    
+#    parsed_data = pre_emph(parsed_data, preemph)    
 
     return parsed_data
-
-#%% testing de_emph
-
-#start_time = time.time()
-#data = data_loader(1)
-#print('---data loading = {} seconds--'.format(time.time()-start_time))
-#
-#start_time = time.time()
-#data = data_parser(data, 2**14, 128)
-#print('---data parsing = {} seconds--'.format(time.time()-start_time))
-
 
 #%%
 def pre_emph(x, coeff=0.95):
     x = tf.cast(x, tf.float32)
+#    x = x.astype(np.float32)
     x0 = tf.reshape(x[:,0], [-1,1]) 
     diff = x[:, 1:] - coeff * x[:, :-1]
-    concat = tf.concat([x0, diff], 1)
+    concat = tf.concat((x0, diff), 1)
     return concat
 
 
@@ -89,3 +78,14 @@ def de_emph(y, len_y, coeff=0.95):
         x = np.concatenate([x, new_col],1)
     return x
 
+
+
+#%% testing de_emph
+
+#start_time = time.time()
+#data = data_loader(1)
+#print('---data loading = {} seconds--'.format(time.time()-start_time))
+#
+#start_time = time.time()
+#data = data_parser(data, 2**14, 128)
+#print('---data parsing = {} seconds--'.format(time.time()-start_time))

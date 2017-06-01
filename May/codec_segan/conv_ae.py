@@ -12,18 +12,20 @@ import tensorflow as tf
 import numpy as np
 import scipy.io as si 
 
-from data_loader import pre_emph, de_emph, data_loader
+from data_loader import data_loader, data_parser, pre_emph, de_emph
 from conv_gen import auto_encoder
 
 #%% loading data
-input_dim =512;
-emphasis = False
+input_dim =2**14
+emphasis = True
+n_batch = 2000
+
 
 #%% Parameters
-
-learning_rate = .0001 
-training_epochs = 5
-batch_size      = 64
+ 
+learning_rate = .001 
+training_epochs = 1
+batch_size      = 128
 display_step = 100
 
 dropout_p = 0.5
@@ -35,7 +37,7 @@ print('batch_size', batch_size)
 
 #%% ##############################################################################
 
-X = tf.placeholder("float", [None, input_dim])
+X = tf.placeholder("float", [batch_size, input_dim])
 #drop_out_p=tf.placeholder("float", [1])
 mode = tf.placeholder("float", None)
         
@@ -44,7 +46,7 @@ mode = tf.placeholder("float", None)
 if emphasis:
     X= pre_emph(X)
     
-y_pred = auto_encoder(X)    
+y_pred = auto_encoder(X, mode)    
 
 #%% Cost and optimization setup
 y_true = X;
@@ -61,40 +63,61 @@ sess.run(init)
 for epoch in range(training_epochs):
     
 #    learning_rate_new = learning_rate_new /2.   
-    for file_idx in range(10):       
-#        file_name = 'com_concat_signal_{}.mat'.format(file_idx)
-        file_name = 'com_concat_signal_{}.mat'.format(file_idx)
-        
-        training_data, n_training = data_loader(file_name, input_dim, overlap=False)
-        n_batch = int(n_training / batch_size)
+    for file_idx in range(10):              
+        training_data = data_loader(file_idx)
+#        n_batch = int(n_training / batch_size)
+
         for  i in range(n_batch):
-            
-            start_ind = np.random.randint(0, n_training-batch_size );  # For shuffling
-#            batch_xs= training_data[ start_ind* batch_size : (start_ind + 1)* batch_size, :]
-            batch_xs= training_data[ start_ind : start_ind + batch_size, :]
-    #        batch_xs= tf.reshape(batch_xs, (batch_size,1,input_dim) )       
+            #pre_emph is zero since we do it on X if we want separatrely
+            batch_xs = data_parser(training_data, input_dim, batch_size, preemph=0.0, overlap=True) 
             _, c = sess.run([optimizer, cost], feed_dict={X: batch_xs, mode:0.0})
             
         # Display logs per epoch step
             if i % display_step == 0:
-                print("epoch", '%02d' % (epoch+1),
-                        "File:", '%02d' % (file_idx),
-                      "iteration:", '%04d' % (i+1),
+                print("epoch_", '%02d' % (epoch+1),
+                        "File_", '%02d' % (file_idx),
+                      "iteration_", '%04d' % (i+1),
                       "cost=", "{:.9f}".format(c))   
 
 print("Optimization Finished!")
 #%%##########################################################################
-# Testing the network performance
+# Training error calculation
 
-training_data, n_training = data_loader('com_concat_signal_9.mat', input_dim, overlap=False)
-training_error=sess.run(cost, feed_dict={X: training_data, mode:1.0})**0.5
+training_data = data_loader(9)
+training_error = 0
+avg_num = 50
 
-test_data, n_test = data_loader('com_concat_signal_10.mat', input_dim, overlap=False)
+for i in range(avg_num):
+    sampled_x = data_parser(training_data, input_dim, batch_size)
+    training_error += sess.run(cost, feed_dict={X: sampled_x, mode:1.0})
 
-y_pred_test, y_true_test, test_error = sess.run([y_pred, y_true, cost],
-                                                feed_dict={X: test_data, mode:1.0})
-test_error = test_error ** 0.5
+training_error = (training_error/ avg_num) **0.5
 
+
+#%% Training error calculation
+
+test_data = data_loader(10)
+test_error = 0
+
+#y_pred_test = []
+#y_true_test = []
+y_pred_test = np.zeros([avg_num*batch_size, input_dim])
+y_true_test = np.zeros([avg_num*batch_size, input_dim])
+
+for i in range(avg_num):
+    sampled_x = data_parser(test_data, input_dim, batch_size)
+    y_pred_test_, y_true_test_, test_error_ = sess.run([y_pred, y_true, cost],
+                                                feed_dict={X: sampled_x, mode:1.0})
+    
+    test_error += test_error_
+#    y_pred_test += [y_pred_test_]
+#    y_true_test += [y_true_test_]
+    y_pred_test [ i * batch_size : (i + 1) * batch_size ,:] = y_pred_test_
+    y_true_test [ i * batch_size : (i + 1) * batch_size ,:] = y_true_test_
+    
+test_error = (test_error/ avg_num) ** 0.5
+
+#PRINTING COSTS
 print( 'training_error', "{:.9f}".format(training_error))
 print( 'test_error', "{:.9f}".format(test_error))
 

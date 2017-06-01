@@ -3,9 +3,33 @@ close all
 clc
 %%
 
-load('rnn_AE_output.mat');
+% load('rnn_AE_output.mat');
 
 
+%%
+load('conv_AE_output.mat');
+
+%%%%%%%%%%reshaping just for conv structure
+% y=y_true_test;
+% y_=y_pred_test;
+% 
+% y_true_test=zeros(50*64, 2^14);
+% y_pred_test=zeros(50*64, 2^14);
+% 
+% for i=1:50
+%     for j=1:64
+%         
+%         display([i,j])
+%         a=y(i,j,:);
+%         a=a(:)';
+%         a_=y_(i,j,:);
+%         a_=a_(:)';
+%         
+%         y_true_test( (i-1)*64 + j , :) = a;
+%         y_pred_test( (i-1)*64 + j , :)  = a_;
+%         
+%     end
+% end
 
 %% Quantization 
 
@@ -53,9 +77,9 @@ num_fig=16;
 for i=1:num_fig
     subplot(sqrt(num_fig),sqrt(num_fig),i)
     ind=randi(size(y_pred_test,1));
-    plot(y_pred_test(ind,:))
+    plot(y_pred_test(ind,1:1024))
     hold on
-    plot(y_true_test(ind,:),'r')
+    plot(y_true_test(ind,1:1024),'r-')
 end
 
 
@@ -86,20 +110,28 @@ sample_pred=sample_pred(rand_ind:rand_ind+num_samples);
 %     [1,size(y_pred_test,2)*length(ind)]);
 
 
-%% Filtering AE output
+% Filtering AE output
 % filter_length=10;
 % fil = 1/filter_length*ones(filter_length,1);
 % sample_pred = filter(fil,1,sample_pred);
 
-%%
+%
 player = audioplayer(sample_true, 16000, 16);
 play(player)   % start the player
-pause(5)
+pause(10)
 stop(player)
 display('original finished')
 
 
 player = audioplayer(sample_pred, 16000, 16);
 play(player)   % start the player
-pause(5)
+pause(10)
 stop(player)
+
+
+%% Writing audio to file
+
+
+audiowrite('true.wav',sample_true, 16000)
+audiowrite('pred.wav',sample_pred, 16000)
+
