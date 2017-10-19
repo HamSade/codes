@@ -1,0 +1,72 @@
+clc
+close all;
+clear
+
+
+%%
+
+fs = 16000;
+frame_size = 512;
+min_time = 5e-3;
+resolution = 1 / 16000 ;
+
+poiss_rndm_intrvls = exprnd(min_time,1,frame_size)/resolution;
+
+poiss_times = cumsum(poiss_rndm_intrvls);
+poiss_times(poiss_times > frame_size) =[];
+% plot(poiss_times)
+
+speech_block = zeros(1, frame_size);
+speech_block(floor(poiss_times))=1;
+
+stem(speech_block)
+
+
+%%
+
+nlock 
+filt = sinc():
+
+filtered_speech = conv(speech_block, filt);
+
+
+figure
+plot(filtered_speech)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
