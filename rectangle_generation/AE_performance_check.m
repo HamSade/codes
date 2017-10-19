@@ -2,8 +2,9 @@ clear
 close all
 clc
 %%
-
-load('dcgan_spectrogram_output.mat') 
+% load('dcgan_spectrogram_output_32k_wasserstein.mat') 
+load('dcgan_spectrogram_output.mat')
+% load('disc_first_output.mat')
 
 %%
 y_t_raw = y_true_test;
@@ -20,11 +21,12 @@ y_p = y_p_raw;
 
 %% 2D Gaussian filtering
 
-filter = 0;
 
-if filter ==1
+filtering = 0;
+
+if filtering ~=0
     
-    h_g = fspecial('gaussian', 20, 10);
+    h_g = fspecial('gaussian', 5, 5);
 
     for i=1:size(y_t,1)
         y_temp = squeeze(y_t(i,:,:));
@@ -34,7 +36,7 @@ if filter ==1
         y_temp = y_temp .* hole_mask;
 
         y_t(i,:,:) = y_temp;
-end
+    end
 
 end
 %% LSD (Log-Spectral distortion)
@@ -56,29 +58,67 @@ end
 % 
 % lsd =  mean(lsd)
 
-%% plotting concatenated
 
-num_fig=8;
+%% plotting (Tiled fashion)
 
+num_fig=100;
 
-xt_sample = [];
-xp_sample = [];
-
-for i=1:num_fig*2   
+for i=1:num_fig/2
     ind=randi(size(y_t_raw,1));
-    xt_sample = [xt_sample squeeze(y_t(ind, :, :))];
-    xp_sample = [xp_sample squeeze(y_p(ind, :, : ))];
     
+    n = size(y_t,2);
+    
+    xt_sample = reshape(y_t(ind, :, :), [n,n]);
+    xp_sample = reshape(y_p(ind, :, :), [n,n]);  
+    
+    
+    subplot(sqrt(num_fig), sqrt(num_fig),i)
+%     imshow(xt_sample)
+    imagesc(1:size(xt_sample,2), 1:size(xt_sample,1), xt_sample)
+    
+    subplot(sqrt(num_fig), sqrt(num_fig),i + num_fig/2)
+%     imshow(xp_sample)
+    imagesc(1:size(xt_sample,2), 1:size(xt_sample,1), xp_sample)
 end
 
-figure()
-subplot(2,1,1)
-imshow(xt_sample)
-% imagesc(1:size(xt_sample,2), 1:size(xt_sample,1), xt_sample)
 
-subplot(2,1,2)
-imshow(xp_sample)
-% imagesc(1:size(xp_sample,2), 1:size(xp_sample,1), xp_sample)
+
+
+ %% plotting concatenated
+% 
+% num_fig=36;
+% 
+% 
+% xt_sample = [];
+% xp_sample = [];
+% 
+% for i=1:num_fig * 2   
+%     ind=randi(size(y_t_raw,1));
+%     
+%     n = size(y_t,2);
+%     
+%     xt_sample = [xt_sample reshape(y_t(ind, :, :), [n,n])];
+%     xp_sample = [xp_sample reshape(y_p(ind, :, :), [n,n])];  
+% % %     xt_sample = [xt_sample squeeze(y_t(ind, :, :))];
+% % %     xp_sample = [xp_sample squeeze(y_p(ind, :, : ))];
+%     
+% %     x_sample = [xt_sample xp_sample];
+%     
+% %     subplot(sqrt(num_fig), sqrt(num_fig), i)
+% %     imshow(x_sample)
+%     
+%     
+% end
+% 
+% 
+% figure()
+% subplot(2,1,1)
+% imshow(xt_sample)
+% % imagesc(1:size(xt_sample,2), 1:size(xt_sample,1), xt_sample)
+% 
+% subplot(2,1,2)
+% imshow(xp_sample)
+% % imagesc(1:size(xp_sample,2), 1:size(xp_sample,1), xp_sample)
 
 %% plotting side by side
 % 
@@ -97,8 +137,10 @@ imshow(xp_sample)
 %     imagesc(1:size(xt_sample,2), 1:size(xt_sample,1), xp_sample)
 % end
 
-%% soundinG!
+%% Spectrogram to time domain conversion
 
+
+%% soundinG!
 % num_samples=1 * 1e6;
 % 
 % n_data=length(y_p_);

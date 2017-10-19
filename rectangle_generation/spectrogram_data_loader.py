@@ -17,6 +17,8 @@ path_name = '/vol/grid-solar/sgeusers/hsadeghi/segan_data/mat_clean_16k/'
 #path_name = '/vol/grid-solar/sgeusers/hsadeghi/simulated_data/poisson_pulse_train/'
 
 fs = 16000
+fc = 4000
+wn = fc/ (fs/2)  #cutoff for speech    
 
 #%%
 def data_loader(file_ind, input_dim): 
@@ -69,7 +71,6 @@ def band_split(x): # input_dim is : batch_size, input_dim + overlap * 2
     
     #### normalizing to [-1, 1]
     Sxx = Sxx - Sxx.mean(axis=-1).reshape(-1, 1)
-#    Sxx = Sxx - Sxx.mean()
     maxi =  np.max(np.abs(Sxx))
     Sxx = Sxx / maxi    
     
@@ -85,17 +86,17 @@ def band_split(x): # input_dim is : batch_size, input_dim + overlap * 2
 #x = np.random.normal(size=[128 , 2**11]) 
 #Sxx_l, Sxx_h, maxi  =  band_split(x)
 
-#input_dim = 2 ** 11
-#n_batch = 1
-#x = data_loader(1, input_dim)
-#Sxx, maxi = data_parser(x, input_dim, n_batch)
-#
-#print('Sxx.shape after split', [len(Sxx), Sxx[0].shape])
-#
-#rand_ind = np.random.randint(low = 0, high = Sxx.shape[0])
-#plt.pcolormesh(Sxx[rand_ind,:,:])
-#plt.ylabel('Frequency [Hz]')
-#plt.xlabel('Time [sec]')
-#plt.show()
+input_dim = 2 ** 16
+n_batch = 1
+x = data_loader(1, input_dim)
+Sxx, maxi = data_parser(x, input_dim, n_batch)
+
+print('Sxx.shape after split', [len(Sxx), Sxx[0].shape])
+
+rand_ind = np.random.randint(low = 0, high = Sxx.shape[0])
+plt.pcolormesh(Sxx[rand_ind,:,:])
+plt.ylabel('Frequency [Hz]')
+plt.xlabel('Time [sec]')
+plt.show()
 
 #print('std of Spectrogram', np.mean(np.sqrt(np.mean(np.power(Sxx_h - np.mean(Sxx_h,axis=0), 2), axis=0))))
