@@ -1,0 +1,3 @@
+model_checkpoint_path: "my_test_model"
+all_model_checkpoint_paths: "/vol/grid-solar/sgeusers/hsadeghi/research_results/saved_model/model.ckpt"
+all_model_checkpoint_paths: "my_test_model"
